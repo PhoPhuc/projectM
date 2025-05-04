@@ -1,0 +1,473 @@
+/* --- Google Font Import --- */
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap');
+
+/* --- Biến màu --- */
+:root {
+    --primary-color: #4a90e2; /* Blue */
+    --secondary-color: #50e3c2; /* Teal/Aqua */
+    --accent-color: #f5a623; /* Orange */
+    --background-color: #f7f9fc; /* Light Blue-Gray */
+    --card-background: #ffffff; /* White */
+    --text-color: #4a4a4a; /* Dark Gray */
+    --text-light: #7f8c9b; /* Medium Gray */
+    --border-color: #dce4ec; /* Light Gray-Blue */
+    --correct-color: #2ecc71; /* Emerald Green */
+    --incorrect-color: #e74c3c; /* Alizarin Red */
+    --hover-light-bg: #e9f3ff;
+    --correct-option-bg: #e6f9f0;
+    --incorrect-option-bg: #fceae8;
+    --timer-bg: #fff0cd; /* Nền vàng nhạt cho timer bài thi */
+    --timer-border: #ffe3a1;
+    --timer-text: #856404;
+    --filter-active-bg: var(--primary-color);
+    --filter-active-text: white;
+    --filter-inactive-bg: #e9ecef;
+    --filter-inactive-text: #495057;
+    --filter-inactive-border: #ced4da;
+    --shadow-color: rgba(74, 144, 226, 0.15);
+    --shadow-light: rgba(0, 0, 0, 0.08);
+    /* Màu cho countdown ngày thi */
+    --countdown-digit-color: var(--primary-color);
+    --countdown-label-color: var(--text-light);
+    --countdown-message-color: var(--accent-color);
+
+    /* Biến màu mới cho toolbar */
+    --toolbar-bg: #ffffff; /* Nền trắng cho toolbar */
+    --toolbar-border: var(--border-color);
+    --toolbar-shadow: rgba(0, 0, 0, 0.05);
+}
+
+/* --- Reset & Body Styles --- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Nunito Sans', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Căn trên cùng */
+    min-height: 100vh;
+    padding: 30px 15px;
+}
+
+#app-container {
+    width: 100%;
+    max-width: 900px;
+}
+
+/* --- Screen Management --- */
+.screen { display: none; animation: fadeIn 0.5s ease-in-out; }
+.screen.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* --- Screen Container Styling --- */
+.screen-container { background-color: var(--card-background); padding: 30px 40px; border-radius: 12px; box-shadow: 0 6px 20px var(--shadow-color); margin-top: 20px; }
+.screen-container h1 { color: var(--primary-color); margin-bottom: 20px; font-size: 1.8em; font-weight: 700; text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+.screen-container > p { text-align: center; margin-bottom: 25px; color: var(--text-light); }
+
+/* --- Countdown Timer Styling (Đếm ngược ngày thi) --- */
+#countdown-container {
+    padding: 20px 0;
+    margin-bottom: 25px;
+    text-align: center;
+}
+#countdown-title {
+    font-size: 0.9em;
+    color: var(--text-light);
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+#countdown {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    flex-wrap: wrap;
+}
+.time-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 60px;
+}
+.digits {
+    display: flex;
+    font-size: 2.5em;
+    font-weight: 600;
+    line-height: 1.1;
+    height: 1.1em;
+    margin-bottom: 5px;
+    position: relative;
+    color: var(--countdown-digit-color);
+}
+.digit-container {
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
+    height: 100%;
+    overflow: hidden;
+}
+.digit {
+    display: inline-block;
+    height: 100%;
+    width: auto;
+    min-width: 0.6ch;
+    text-align: center;
+    transition: transform 0.4s ease-in-out;
+}
+.time-unit > span:last-of-type {
+    font-size: 0.75em;
+    text-transform: uppercase;
+    color: var(--countdown-label-color);
+    letter-spacing: 1px;
+}
+#message {
+    margin-top: 25px;
+    font-size: 1.1em;
+    font-weight: 600;
+    color: var(--countdown-message-color);
+}
+
+
+/* --- Subject Selection Screen --- */
+#subject-selection-screen .screen-container { /* Style riêng nếu cần */ }
+.grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; }
+.subject-card { background-color: #f8f9fa; border: 1px solid var(--border-color); border-radius: 10px; padding: 25px 20px; text-align: center; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 150px; }
+.subject-card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px var(--shadow-light); border-color: var(--primary-color); }
+.subject-card i { font-size: 2.5em; color: var(--primary-color); margin-bottom: 15px; }
+.subject-card h3 { font-size: 1.1em; font-weight: 600; color: var(--text-color); }
+
+/* --- Quiz List Screen --- */
+#quiz-list-screen .screen-container h1 span { color: var(--secondary-color); font-weight: 700; }
+.list-container { display: flex; flex-direction: column; gap: 15px; }
+.quiz-list-item { background-color: var(--card-background); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background-color 0.2s ease, border-color 0.2s ease; }
+.quiz-list-item:hover { background-color: var(--hover-light-bg); border-color: var(--primary-color); }
+.quiz-list-item span { font-weight: 600; }
+.quiz-list-item i { color: var(--primary-color); font-size: 1.2em; }
+
+/* --- Back Button --- */
+.back-button { background: none; border: none; color: var(--primary-color); font-size: 1em; font-weight: 600; cursor: pointer; margin-bottom: 15px; display: inline-flex; align-items: center; padding: 5px 0; }
+.back-button i { margin-right: 5px; font-size: 1.2em; }
+.back-button:hover { text-decoration: underline; }
+
+/* --- Info Screen Styling --- */
+#info-screen .screen-container { text-align: center; }
+#info-screen h1 { font-size: 1.6em; }
+.info-details { background-color: #f8f9fa; border: 1px solid var(--border-color); border-radius: 8px; padding: 15px 20px; margin: 20px auto; display: inline-block; text-align: left; }
+.info-details p { margin-bottom: 8px; color: var(--text-color); font-size: 1em; text-align: left;}
+.info-details p:last-child { margin-bottom: 0; }
+.info-details strong { color: var(--primary-color); margin-right: 5px; }
+.info-details i { margin-right: 8px; color: var(--secondary-color); font-size: 1.1em; vertical-align: middle; }
+.start-button { background-color: var(--correct-color); color: white; border: none; padding: 15px 40px; font-size: 1.2em; font-weight: 700; border-radius: 8px; cursor: pointer; transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease; margin-top: 15px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }
+.start-button:hover { background-color: #27ae60; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); }
+
+/* --- Quiz Active Screen Styling --- */
+#quiz-section {
+    position: relative; /* Cần thiết để thanh toolbar cố định */
+    padding-top: 70px; /* Thêm padding để nội dung không bị che bởi toolbar */
+}
+
+.quiz-active-container {
+    background-color: var(--card-background);
+    padding: 30px 40px; /* Giữ padding ban đầu */
+    border-radius: 12px;
+    box-shadow: 0 6px 20px var(--shadow-color);
+    /* margin-top: 20px; /* Bỏ margin-top vì padding-top của #quiz-section đã xử lý khoảng cách */
+     text-align: left;
+}
+
+
+/* --- Toolbar mới trong Quiz Section --- */
+#quiz-toolbar {
+    position: fixed; /* Cố định vị trí */
+    top: 0; /* Đặt ở trên cùng */
+    left: 0;
+    width: 100%; /* Chiếm toàn bộ chiều rộng */
+    background-color: var(--toolbar-bg); /* Nền trắng */
+    border-bottom: 1px solid var(--toolbar-border); /* Viền dưới */
+    box-shadow: 0 2px 8px var(--toolbar-shadow); /* Đổ bóng nhẹ */
+    padding: 10px 20px; /* Padding bên trong */
+    display: flex; /* Sử dụng flexbox để căn chỉnh các phần tử */
+    justify-content: space-between; /* Căn đều các phần tử */
+    align-items: center; /* Căn giữa theo chiều dọc */
+    z-index: 1000; /* Đảm bảo toolbar nằm trên các nội dung khác */
+    /* Thêm padding ngang để nội dung không dính sát mép màn hình nhỏ */
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+#quiz-toolbar .back-button {
+    margin-bottom: 0; /* Bỏ margin-bottom */
+    padding: 5px 10px; /* Điều chỉnh padding nút quay lại trong toolbar */
+}
+
+#quiz-toolbar #timer-container {
+    position: static; /* Bỏ position absolute */
+    top: auto;
+    right: auto;
+    margin: 0 auto; /* Căn giữa thời gian */
+    box-shadow: none; /* Bỏ đổ bóng */
+    padding: 5px 10px; /* Điều chỉnh padding */
+    font-size: 1em; /* Điều chỉnh kích thước font */
+    background-color: var(--timer-bg);
+    border: 1px solid var(--timer-border);
+    color: var(--timer-text);
+    border-radius: 6px;
+    display: inline-flex; /* Để icon và text cùng hàng */
+    align-items: center;
+    gap: 5px; /* Khoảng cách giữa icon và text */
+}
+
+#quiz-toolbar .submit-button {
+    /* Sử dụng lại style của start-button nhưng đổi màu và padding */
+    background-color: var(--primary-color); /* Màu xanh */
+    color: white;
+    border: none;
+    padding: 8px 20px; /* Điều chỉnh padding */
+    font-size: 1em; /* Điều chỉnh kích thước font */
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
+}
+#quiz-toolbar .submit-button:hover {
+    background-color: #3a7bc8; /* Màu xanh đậm hơn khi hover */
+    transform: translateY(-1px); /* Hiệu ứng nhấc nhẹ */
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+
+/* --- Question Styling (Chung) --- */
+#quiz { /* Container chứa các question-block */
+     margin-top: 20px; /* Tạo khoảng cách với toolbar cố định */
+}
+.question-block { background-color: var(--card-background); border: 1px solid var(--border-color); border-radius: 10px; padding: 25px 30px; margin-bottom: 25px; text-align: left; box-shadow: 0 3px 8px var(--shadow-light); transition: box-shadow 0.3s ease; }
+.question-block:hover { box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); }
+.question-text { font-weight: 600; margin-bottom: 20px; font-size: 1.2em; color: var(--text-color); text-align: left; }
+
+/* --- Options (MC & TF) Styling --- */
+.options, .statements-container { margin-top: 15px; text-align: left; }
+/* Áp dụng style cho label của cả radio và checkbox */
+.options label, .statements-container label {
+    display: block;
+    margin-bottom: 12px;
+    cursor: pointer;
+    padding: 12px 18px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--card-background);
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+    position: relative;
+    text-align: left;
+}
+.options label:last-child, .statements-container label:last-child { margin-bottom: 0; }
+.options label:hover, .statements-container label:hover { background-color: var(--hover-light-bg); border-color: var(--primary-color); transform: translateY(-1px); }
+
+/* Style cho input (radio và checkbox) */
+.options input[type="radio"],
+.statements-container input[type="checkbox"] {
+    margin-right: 15px;
+    accent-color: var(--primary-color);
+    vertical-align: middle;
+    transform: scale(1.1);
+}
+
+/* --- Fill-in-the-blank Styling (Cập nhật) --- */
+.fill-container {
+    margin-top: 15px;
+}
+.fill-input {
+    width: 100%;
+    padding: 12px 18px; /* Giống padding của label */
+    font-size: 1em;
+    font-family: inherit;
+    color: var(--text-color); /* Màu chữ giống text thường */
+    background-color: var(--card-background); /* Nền giống label */
+    border: 1px solid var(--border-color); /* Viền giống label */
+    border-radius: 8px; /* Bo góc giống label */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.2s ease;
+    appearance: none; /* Loại bỏ style mặc định của trình duyệt */
+    -webkit-appearance: none;
+}
+.fill-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+}
+.fill-input::placeholder {
+    color: var(--text-light);
+    opacity: 0.7;
+}
+.fill-input.correct-option {
+    background-color: var(--correct-option-bg) !important;
+    border-color: var(--correct-color) !important;
+    color: #1a5c3a; /* Màu chữ đậm hơn */
+}
+.fill-input.incorrect-option {
+    background-color: var(--incorrect-option-bg) !important;
+    border-color: var(--incorrect-color) !important;
+    color: #a52a1a; /* Màu chữ đậm hơn */
+}
+.fill-input:disabled:not(.correct-option):not(.incorrect-option) {
+     background-color: #e9ecef;
+     opacity: 0.7;
+     cursor: not-allowed;
+     border-color: var(--border-color);
+}
+.fill-input:disabled {
+     cursor: not-allowed;
+}
+
+
+/* --- Buttons --- */
+.button-container { margin-top: 30px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; text-align: center; }
+
+#submit-btn, #retry-btn, .secondary-button { color: white; border: none; padding: 14px 30px; font-size: 1.05em; font-weight: 600; border-radius: 8px; cursor: pointer; transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease; flex-grow: 1; max-width: 220px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }
+#submit-btn:hover, #retry-btn:hover, .secondary-button:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); }
+
+/* Định kiểu cho nút nộp bài gốc */
+#submit-btn { background-color: var(--primary-color); }
+#submit-btn:hover { background-color: #3a7bc8; }
+
+
+#retry-btn { background-color: var(--accent-color); }
+#retry-btn:hover { background-color: #e09313; }
+.secondary-button { background-color: var(--text-light); }
+.secondary-button:hover { background-color: #6c757d; }
+
+/* --- Score, Filter, Result Area --- */
+#score-container { display: none; margin-top: 35px; font-size: 1.3em; font-weight: 600; color: var(--text-color); padding: 15px 20px; background-color: var(--hover-light-bg); border: 1px solid var(--primary-color); border-radius: 8px; text-align: left; }
+#score-container strong { color: var(--primary-color); font-weight: 700; }
+#filter-container { display: none; margin-top: 20px; margin-bottom: 15px; text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+.filter-btn { background-color: var(--filter-inactive-bg); color: var(--filter-inactive-text); border: 1px solid var(--filter-inactive-border); padding: 8px 16px; font-size: 0.9em; font-weight: 600; border-radius: 20px; cursor: pointer; transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; margin: 0 5px; }
+.filter-btn:hover { background-color: #d3d9df; border-color: #adb5bd; }
+.filter-btn.active { background-color: var(--filter-active-bg); color: var(--filter-active-text); border-color: var(--primary-color); font-weight: 700; }
+#result-container { display: none; margin-top: 0; text-align: left; padding: 20px; background-color: var(--card-background); border: 1px solid var(--border-color); border-radius: 10px; }
+#result-container > div, #result-container > p { margin-bottom: 15px; padding: 15px; border-bottom: none; border: 1px solid var(--border-color); border-radius: 6px; background-color: #fafafe; text-align: left; transition: opacity 0.3s ease, max-height 0.3s ease, margin 0.3s ease, padding 0.3s ease; overflow: hidden; }
+#result-container > div.hidden-result, #result-container > p.hidden-result { opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; margin-top: 0; margin-bottom: 0; border-width: 0; overflow: hidden; }
+#result-container > div:last-child, #result-container > p:last-child { margin-bottom: 0; }
+
+/* --- Feedback Styling --- */
+.correct { color: var(--correct-color); font-weight: 700; padding: 2px 5px; background-color: #e6f9f0; border-radius: 4px; display: inline-block; margin-left: 5px; }
+.incorrect { color: var(--incorrect-color); font-weight: 700; padding: 2px 5px; background-color: #fceae8; border-radius: 4px; display: inline-block; margin-left: 5px; }
+.user-answer { font-weight: 600; text-decoration: none; color: var(--primary-color); border-bottom: 2px dotted var(--primary-color); font-style: normal; }
+.statement-result-item { margin-top: 8px; margin-bottom: 8px; padding-left: 10px; font-size: 0.98em; border-left: 3px solid var(--secondary-color); padding-top: 5px; padding-bottom: 5px; text-align: left; }
+.statement-result-item:last-child { margin-bottom: 0; }
+
+/* --- Correct/Incorrect Option Highlighting --- */
+/* Áp dụng style cho label của cả radio và checkbox khi đúng/sai */
+.options label.correct-option,
+.statements-container label.correct-option {
+    background-color: var(--correct-option-bg) !important;
+    border-color: var(--correct-color) !important;
+    color: #1a5c3a;
+    font-weight: 600;
+}
+.options label.incorrect-option,
+.statements-container label.incorrect-option {
+    background-color: var(--incorrect-option-bg) !important;
+    border-color: var(--incorrect-color) !important;
+    color: #a52a1a;
+}
+
+.fill-input.correct-option { background-color: var(--correct-option-bg) !important; border-color: var(--correct-color) !important; color: #1a5c3a; }
+.fill-input.incorrect-option { background-color: var(--incorrect-option-bg) !important; border-color: var(--incorrect-color) !important; color: #a52a1a; }
+
+/* --- Disabled state --- */
+.options label:has(input:disabled):not(.correct-option):not(.incorrect-option),
+.statements-container label:has(input:disabled):not(.correct-option):not(.incorrect-option) {
+    opacity: 0.7;
+    cursor: default;
+    background-color: var(--card-background) !important;
+    border-color: var(--border-color) !important;
+    transform: none !important;
+}
+.options label:has(input:disabled):hover,
+.statements-container label:has(input:disabled):hover { transform: none; }
+
+.fill-input:disabled:not(.correct-option):not(.incorrect-option) { background-color: #e9ecef; opacity: 0.7; cursor: not-allowed; border-color: var(--border-color); }
+.fill-input:disabled { cursor: not-allowed; }
+
+
+/* --- Styling cho hình ảnh câu hỏi --- */
+.question-image,
+.question-image-result {
+    max-width: 100%; /* Đảm bảo ảnh không tràn ra ngoài container */
+    height: auto; /* Giữ tỷ lệ khung hình */
+    display: block; /* Hiển thị trên một dòng riêng */
+    margin-top: 15px; /* Khoảng cách với nội dung phía trên */
+    margin-bottom: 15px; /* Khoảng cách với nội dung phía dưới */
+    border-radius: 8px; /* Bo góc cho ảnh */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
+}
+
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .grid-container { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
+    .subject-card { padding: 20px 15px; min-height: 120px; }
+    .subject-card i { font-size: 2em; margin-bottom: 10px; }
+    /* Điều chỉnh padding cho screen-container để phù hợp với toolbar */
+    .screen-container { padding: 25px 30px; }
+    /* Điều chỉnh padding-top cho #quiz-section để tạo khoảng trống cho toolbar */
+     #quiz-section { padding-top: 65px; }
+     #quiz-toolbar { padding: 8px 10px; } /* Giảm padding toolbar trên màn hình nhỏ */
+     #quiz-toolbar #timer-container { font-size: 0.9em; padding: 4px 8px; }
+     #quiz-toolbar .submit-button { padding: 6px 15px; font-size: 0.9em; }
+}
+@media (max-width: 600px) {
+    body { padding: 20px 10px; }
+     /* Điều chỉnh padding cho screen-container */
+    .screen-container { padding: 20px 25px; }
+     /* Điều chỉnh padding-top cho #quiz-section */
+     #quiz-section { padding-top: 60px; }
+     #quiz-toolbar { padding: 6px 8px; } /* Giảm padding toolbar trên màn hình rất nhỏ */
+     #quiz-toolbar #timer-container { font-size: 0.85em; padding: 3px 6px; }
+     #quiz-toolbar .submit-button { padding: 5px 12px; font-size: 0.85em; }
+
+    h1 { font-size: 1.6em; }
+    #info-screen h1 { font-size: 1.5em; }
+    .grid-container { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+    #countdown { gap: 15px; } .digits { font-size: 2em; } .time-unit > span:last-of-type { font-size: 0.7em; }
+    .question-block { padding: 20px; }
+    .start-button { padding: 12px 30px; font-size: 1.1em; }
+    #retry-btn, .secondary-button { padding: 12px 20px; font-size: 1em; max-width: 100%; }
+    #score-container { font-size: 1.15em; padding: 12px 15px; }
+    #filter-container { padding-bottom: 10px; margin-bottom: 10px; }
+    .filter-btn { padding: 6px 12px; font-size: 0.85em; }
+    #result-container > div, #result-container > p { padding: 10px; }
+    .fill-input { padding: 10px 12px; }
+}
+
+/* --- Styling cho Nút Báo cáo/Yêu cầu (Đã thêm) --- */
+#feedback-button {
+    position: fixed; /* Giữ nút cố định trên màn hình */
+    bottom: 20px;    /* Cách đáy màn hình 20px */
+    right: 20px;     /* Cách mép trái màn hình 20px */
+    background-color: var(--primary-color); /* Sử dụng màu chính hoặc màu khác */
+    color: white;
+    width: 50px;     /* Kích thước chiều rộng */
+    height: 50px;    /* Kích thước chiều cao */
+    border-radius: 50%; /* Bo tròn thành hình tròn */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5em; /* Kích thước icon */
+    text-decoration: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Đổ bóng */
+    z-index: 1001; /* Đảm bảo nút nằm trên các thành phần khác (cao hơn z-index của toolbar) */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+#feedback-button:hover {
+    background-color: #3a7bc8; /* Màu đậm hơn khi hover */
+    transform: scale(1.1); /* Phóng to nhẹ khi hover */
+}
+
+#feedback-button i {
+  line-height: 1; /* Căn chỉnh icon tốt hơn */
+}
