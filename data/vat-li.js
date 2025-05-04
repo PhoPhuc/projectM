@@ -1,9 +1,6 @@
 // data/vatli.js
 
 // Dữ liệu quiz cho môn Vật lí
-const vatLiQuizData = {// data/vatli.js
-
-// Dữ liệu quiz cho môn Vật lí
 const vatLiQuizData = {
     subjectName: 'Vật lí',
     icon: 'ph-atom',
