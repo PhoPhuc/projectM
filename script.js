@@ -33,6 +33,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterContainer = document.getElementById('filter-container');
     const resultContainer = document.getElementById('result-container');
 
+    // --- Tham chiếu cho nút và menu đa năng (Mới) ---
+    const multiFunctionButton = document.getElementById('multi-function-button');
+    const multiFunctionMenu = document.getElementById('multi-function-menu');
+
     // --- Trạng thái ứng dụng ---
     let currentView = 'subjectSelection';
     let selectedSubjectSlug = null;
@@ -787,7 +791,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- LOGIC COUNTDOWN ĐẾN NGÀY THI (Đã cập nhật) ---
     // --- THAY ĐỔI NGÀY GIỜ KẾT THÚC TẠI ĐÂY ---
     // Giữ nguyên ngày từ script.js ban đầu
-    const countdownDate = new Date("May 12, 2025 00:07:15").getTime();
+    const countdownDate = new Date("May 12, 2025 00:08:00").getTime();
     // --------------------------------------------
 
     const messageEl = document.getElementById('message');
@@ -1048,6 +1052,36 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
          console.warn("Filter container not found.");
     }
+
+    // --- Logic cho nút và menu đa năng (Mới) ---
+    if (multiFunctionButton && multiFunctionMenu) {
+        multiFunctionButton.addEventListener('click', (event) => {
+            event.stopPropagation(); // Ngăn sự kiện click lan ra ngoài
+            multiFunctionMenu.classList.toggle('visible');
+            multiFunctionMenu.classList.toggle('hidden');
+        });
+
+        // Đóng menu khi click ra ngoài
+        document.addEventListener('click', (event) => {
+            // Kiểm tra xem click có nằm ngoài nút và menu không
+            if (!multiFunctionButton.contains(event.target) && !multiFunctionMenu.contains(event.target)) {
+                multiFunctionMenu.classList.remove('visible');
+                multiFunctionMenu.classList.add('hidden');
+            }
+        });
+
+        // Đóng menu khi một mục trong menu được click (tùy chọn)
+        multiFunctionMenu.addEventListener('click', () => {
+             multiFunctionMenu.classList.remove('visible');
+             multiFunctionMenu.classList.add('hidden');
+        });
+
+    } else {
+        console.warn("Multi-function button or menu not found.");
+    }
+    // --- Kết thúc Logic nút đa năng ---
+
+
     // --- Kết thúc Gắn sự kiện ---
 
 
