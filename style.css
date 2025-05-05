@@ -35,6 +35,10 @@
     --toolbar-bg: #ffffff; /* Nền trắng cho toolbar */
     --toolbar-border: var(--border-color);
     --toolbar-shadow: rgba(0, 0, 0, 0.05);
+
+    /* Gradient colors */
+    --gradient-purple: #8a2be2; /* BlueViolet */
+    --gradient-blue: var(--primary-color);
 }
 
 /* --- Reset & Body Styles --- */
@@ -63,12 +67,33 @@ body {
 
 /* --- Screen Container Styling --- */
 .screen-container { background-color: var(--card-background); padding: 30px 40px; border-radius: 12px; box-shadow: 0 6px 20px var(--shadow-color); margin-top: 20px; }
-.screen-container h1 { color: var(--primary-color); margin-bottom: 20px; font-size: 1.8em; font-weight: 700; text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
-.screen-container > p { text-align: center; margin-bottom: 25px; color: var(--text-light); }
+.screen-container h1 { color: var(--primary-color); margin-bottom: 10px; /* Giảm margin bottom */ font-size: 1.8em; font-weight: 700; text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+/* Paragraph mặc định trong screen-container */
+.screen-container > p:not(.subtitle-gradient) {
+    text-align: center;
+    margin-bottom: 25px;
+    color: var(--text-light);
+}
+
+/* --- Subtitle Gradient Styling (Cập nhật) --- */
+.subtitle-gradient {
+    font-size: 1.1em; /* Kích thước chữ */
+    font-weight: 600; /* Độ đậm */
+    text-align: center; /* Căn giữa */
+    margin-top: -5px; /* Kéo lên gần tiêu đề */
+    margin-bottom: 15px; /* Điều chỉnh khoảng cách dưới (giảm từ 25px) */
+    background: linear-gradient(90deg, var(--gradient-purple), var(--gradient-blue)); /* Gradient tím-xanh */
+    -webkit-background-clip: text; /* Tiền tố Webkit cho khả năng tương thích */
+    background-clip: text; /* Chuẩn */
+    color: transparent; /* Làm cho màu chữ gốc trong suốt */
+    padding-bottom: 5px; /* Thêm chút padding dưới nếu cần */
+    -webkit-text-fill-color: transparent; /* Thêm thuộc tính này để đảm bảo màu trong suốt trên một số trình duyệt */
+}
+
 
 /* --- Countdown Timer Styling (Đếm ngược ngày thi) --- */
 #countdown-container {
-    padding: 20px 0;
+    padding: 15px 0; /* Giảm padding trên của countdown để gần subtitle hơn */
     margin-bottom: 25px;
     text-align: center;
 }
@@ -418,6 +443,7 @@ body {
      #quiz-toolbar { padding: 8px 10px; } /* Giảm padding toolbar trên màn hình nhỏ */
      #quiz-toolbar #timer-container { font-size: 0.9em; padding: 4px 8px; }
      #quiz-toolbar .submit-button { padding: 6px 15px; font-size: 0.9em; }
+     .subtitle-gradient { font-size: 1em; } /* Giảm cỡ chữ subtitle trên mobile */
 }
 @media (max-width: 600px) {
     body { padding: 20px 10px; }
@@ -441,33 +467,115 @@ body {
     .filter-btn { padding: 6px 12px; font-size: 0.85em; }
     #result-container > div, #result-container > p { padding: 10px; }
     .fill-input { padding: 10px 12px; }
+    .subtitle-gradient { font-size: 0.95em; } /* Giảm thêm cỡ chữ subtitle */
 }
 
-/* --- Styling cho Nút Báo cáo/Yêu cầu (Đã thêm) --- */
-#feedback-button {
+/* --- Styling cho Nút Đa năng (Mới) --- */
+#multi-function-container {
     position: fixed; /* Giữ nút cố định trên màn hình */
     bottom: 20px;    /* Cách đáy màn hình 20px */
-    right: 20px;     /* Cách mép trái màn hình 20px */
-    background-color: var(--primary-color); /* Sử dụng màu chính hoặc màu khác */
+    right: 20px;     /* Cách mép phải màn hình 20px */
+    z-index: 1001; /* Đảm bảo nút và menu nằm trên các thành phần khác */
+}
+
+#multi-function-button {
+    background-color: var(--primary-color); /* Sử dụng màu chính */
     color: white;
     width: 50px;     /* Kích thước chiều rộng */
     height: 50px;    /* Kích thước chiều cao */
     border-radius: 50%; /* Bo tròn thành hình tròn */
+    border: none;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 1.5em; /* Kích thước icon */
-    text-decoration: none;
+    font-size: 1.6em; /* Kích thước icon */
+    cursor: pointer;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Đổ bóng */
-    z-index: 1001; /* Đảm bảo nút nằm trên các thành phần khác (cao hơn z-index của toolbar) */
     transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-#feedback-button:hover {
+#multi-function-button:hover {
     background-color: #3a7bc8; /* Màu đậm hơn khi hover */
     transform: scale(1.1); /* Phóng to nhẹ khi hover */
 }
 
-#feedback-button i {
+#multi-function-button i {
   line-height: 1; /* Căn chỉnh icon tốt hơn */
+}
+
+#multi-function-menu {
+    position: absolute;
+    bottom: 65px; /* Vị trí menu phía trên nút */
+    right: 0;
+    background-color: var(--card-background);
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    padding: 10px 0; /* Padding trên dưới */
+    width: 180px; /* Độ rộng của menu */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px); /* Hiệu ứng xuất hiện từ dưới lên */
+    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+}
+
+#multi-function-menu.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+#multi-function-menu.hidden {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+}
+
+
+#multi-function-menu a {
+    display: flex; /* Hiển thị icon và text trên cùng hàng */
+    align-items: center; /* Căn giữa theo chiều dọc */
+    padding: 10px 15px; /* Padding cho từng mục */
+    color: var(--text-color);
+    text-decoration: none;
+    font-size: 0.95em;
+    transition: background-color 0.2s ease;
+    white-space: nowrap; /* Ngăn text xuống dòng */
+}
+
+#multi-function-menu a:hover {
+    background-color: var(--hover-light-bg);
+    color: var(--primary-color);
+}
+
+#multi-function-menu a i {
+    margin-right: 10px; /* Khoảng cách giữa icon và text */
+    font-size: 1.2em; /* Kích thước icon trong menu */
+    color: var(--primary-color); /* Màu cho icon */
+    width: 20px; /* Đảm bảo icon chiếm không gian cố định */
+    text-align: center;
+}
+
+#multi-function-menu a:hover i {
+    color: var(--primary-color); /* Giữ màu icon khi hover */
+}
+
+/* Ẩn class .hidden cũ (nếu còn) */
+/* .hidden {
+    display: none;
+} */
+
+/* Class mới để ẩn/hiện menu bằng JS */
+#multi-function-menu.visible {
+    /* display: block; /* Hoặc flex, grid tùy layout */
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+#multi-function-menu.hidden {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    /* Quan trọng: Thêm transition-delay để tránh bị ẩn ngay lập tức khi click */
+    transition: opacity 0.3s ease, visibility 0s linear 0.3s, transform 0.3s ease;
 }
