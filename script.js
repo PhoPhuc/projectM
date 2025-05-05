@@ -791,7 +791,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- LOGIC COUNTDOWN ĐẾN NGÀY THI (Đã cập nhật) ---
     // --- THAY ĐỔI NGÀY GIỜ KẾT THÚC TẠI ĐÂY ---
     // Giữ nguyên ngày từ script.js ban đầu
-    const countdownDate = new Date("May 12, 2025 00:08:00").getTime();
+    const countdownDate = new Date("May 12, 2025 07:15:00").getTime();
     // --------------------------------------------
 
     const messageEl = document.getElementById('message');
