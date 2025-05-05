@@ -36,15 +36,15 @@
     --toolbar-border: var(--border-color);
     --toolbar-shadow: rgba(0, 0, 0, 0.05);
 
-    /* Gradient colors */
-    --gradient-purple: #8a2be2; /* BlueViolet */
-    --gradient-blue: var(--primary-color);
+    /* Gradient colors (Không còn dùng cho subtitle) */
+    /* --gradient-purple: #8a2be2; */
+    /* --gradient-blue: var(--primary-color); */
 }
 
 /* --- Reset & Body Styles --- */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-    font-family: 'Nunito Sans', sans-serif;
+    font-family: 'Nunito Sans', sans-serif; /* Giữ font gốc */
     background-color: var(--background-color);
     color: var(--text-color);
     line-height: 1.6;
@@ -67,33 +67,44 @@ body {
 
 /* --- Screen Container Styling --- */
 .screen-container { background-color: var(--card-background); padding: 30px 40px; border-radius: 12px; box-shadow: 0 6px 20px var(--shadow-color); margin-top: 20px; }
-.screen-container h1 { color: var(--primary-color); margin-bottom: 10px; /* Giảm margin bottom */ font-size: 1.8em; font-weight: 700; text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+.screen-container h1 { color: var(--primary-color); margin-bottom: 10px; font-size: 1.8em; font-weight: 700; text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
 /* Paragraph mặc định trong screen-container */
-.screen-container > p:not(.subtitle-gradient) {
+.screen-container > p {
     text-align: center;
     margin-bottom: 25px;
     color: var(--text-light);
 }
 
-/* --- Subtitle Gradient Styling (Cập nhật) --- */
-.subtitle-gradient {
-    font-size: 1.1em; /* Kích thước chữ */
-    font-weight: 600; /* Độ đậm */
-    text-align: center; /* Căn giữa */
-    margin-top: -5px; /* Kéo lên gần tiêu đề */
-    margin-bottom: 15px; /* Điều chỉnh khoảng cách dưới (giảm từ 25px) */
-    background: linear-gradient(90deg, var(--gradient-purple), var(--gradient-blue)); /* Gradient tím-xanh */
-    -webkit-background-clip: text; /* Tiền tố Webkit cho khả năng tương thích */
-    background-clip: text; /* Chuẩn */
-    color: transparent; /* Làm cho màu chữ gốc trong suốt */
-    padding-bottom: 5px; /* Thêm chút padding dưới nếu cần */
-    -webkit-text-fill-color: transparent; /* Thêm thuộc tính này để đảm bảo màu trong suốt trên một số trình duyệt */
+/* --- CSS cho Thanh Tiến Trình Quyên Góp (Thêm mới) --- */
+.donation-progress-container {
+    font-family: 'Inter', sans-serif; /* Áp dụng font Inter riêng cho phần này nếu muốn */
 }
+.progress-bar-fill {
+    transition: width 0.5s ease-in-out; /* Hiệu ứng chuyển động */
+}
+.animated-gradient {
+    background-size: 200% 100%;
+    background-image: linear-gradient(
+        to right,
+        #4ade80, /* green-400 */
+        #3b82f6, /* blue-500 */
+        #22d3ee, /* cyan-400 */
+        #4ade80  /* green-400 - lặp lại */
+    );
+    animation: gradient-animation 3s linear infinite; /* Animation gradient */
+}
+@keyframes gradient-animation {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+}
+/* Tùy chỉnh màu link trong thanh tiến trình nếu cần */
+/* .custom-link:hover { color: #357ABD; } */
+/* --- Kết thúc CSS Thanh Tiến Trình --- */
 
 
 /* --- Countdown Timer Styling (Đếm ngược ngày thi) --- */
 #countdown-container {
-    padding: 15px 0; /* Giảm padding trên của countdown để gần subtitle hơn */
+    padding: 15px 0;
     margin-bottom: 25px;
     text-align: center;
 }
@@ -198,7 +209,7 @@ body {
     padding: 30px 40px; /* Giữ padding ban đầu */
     border-radius: 12px;
     box-shadow: 0 6px 20px var(--shadow-color);
-    /* margin-top: 20px; /* Bỏ margin-top vì padding-top của #quiz-section đã xử lý khoảng cách */
+    /* margin-top: 20px; Bỏ margin-top vì padding-top của #quiz-section đã xử lý khoảng cách */
      text-align: left;
 }
 
@@ -443,7 +454,7 @@ body {
      #quiz-toolbar { padding: 8px 10px; } /* Giảm padding toolbar trên màn hình nhỏ */
      #quiz-toolbar #timer-container { font-size: 0.9em; padding: 4px 8px; }
      #quiz-toolbar .submit-button { padding: 6px 15px; font-size: 0.9em; }
-     .subtitle-gradient { font-size: 1em; } /* Giảm cỡ chữ subtitle trên mobile */
+     /* .subtitle-gradient { font-size: 1em; } /* Không còn dùng */
 }
 @media (max-width: 600px) {
     body { padding: 20px 10px; }
@@ -467,7 +478,7 @@ body {
     .filter-btn { padding: 6px 12px; font-size: 0.85em; }
     #result-container > div, #result-container > p { padding: 10px; }
     .fill-input { padding: 10px 12px; }
-    .subtitle-gradient { font-size: 0.95em; } /* Giảm thêm cỡ chữ subtitle */
+    /* .subtitle-gradient { font-size: 0.95em; } /* Không còn dùng */
 
     /* Điều chỉnh nút đa năng cho màn hình nhỏ */
     #multi-function-container {
@@ -582,14 +593,8 @@ body {
     color: var(--primary-color); /* Giữ màu icon khi hover */
 }
 
-/* Ẩn class .hidden cũ (nếu còn) */
-/* .hidden {
-    display: none;
-} */
-
 /* Class mới để ẩn/hiện menu bằng JS */
 #multi-function-menu.visible {
-    /* display: block; /* Hoặc flex, grid tùy layout */
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
