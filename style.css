@@ -468,14 +468,37 @@ body {
     #result-container > div, #result-container > p { padding: 10px; }
     .fill-input { padding: 10px 12px; }
     .subtitle-gradient { font-size: 0.95em; } /* Giảm thêm cỡ chữ subtitle */
+
+    /* Điều chỉnh nút đa năng cho màn hình nhỏ */
+    #multi-function-container {
+        bottom: 15px; /* Giảm khoảng cách dưới */
+        right: 15px;  /* Giảm khoảng cách phải */
+    }
+    #multi-function-button {
+        width: 45px;  /* Giảm kích thước nút */
+        height: 45px;
+        font-size: 1.4em; /* Giảm kích thước icon */
+    }
+    #multi-function-menu {
+        bottom: 60px; /* Điều chỉnh vị trí menu tương ứng */
+        width: 160px; /* Giảm chiều rộng menu */
+    }
+    #multi-function-menu a {
+        padding: 8px 12px; /* Giảm padding mục menu */
+        font-size: 0.9em;
+    }
+    #multi-function-menu a i {
+        font-size: 1.1em;
+    }
+
 }
 
-/* --- Styling cho Nút Đa năng (Mới) --- */
+/* --- Styling cho Nút Đa năng (Cập nhật) --- */
 #multi-function-container {
     position: fixed; /* Giữ nút cố định trên màn hình */
     bottom: 20px;    /* Cách đáy màn hình 20px */
     right: 20px;     /* Cách mép phải màn hình 20px */
-    z-index: 1001; /* Đảm bảo nút và menu nằm trên các thành phần khác */
+    z-index: 1005; /* Tăng z-index để đảm bảo nổi lên trên */
 }
 
 #multi-function-button {
