@@ -29,29 +29,6 @@
         <div id="subject-selection-screen" class="screen active">
             <div class="screen-container">
                 <h1>Chọn Môn Học</h1>
-                <div class="w-full max-w-md mx-auto mb-2 donation-progress-container">
-                    <h2 class="text-base md:text-lg font-semibold mb-2 md:mb-3 text-center text-gray-700">Share Azota VIP (Không bắt buộc)</h2>
-                    <div class="mb-2 md:mb-3">
-                        <div class="flex justify-between mb-0.5 text-[11px] md:text-xs font-medium text-gray-600">
-                            <span id="donated-amount-display">Đã quyên góp: 0 VNĐ</span>
-                            <span id="goal-amount-display">Mục tiêu: 0 VNĐ</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2 md:h-3 dark:bg-gray-700 overflow-hidden">
-                            <div id="progress-bar-fill" class="progress-bar-fill animated-gradient h-2 md:h-3 rounded-full" style="width: 0%"></div>
-                        </div>
-                        <div class="flex justify-between items-center mt-0.5 text-[11px] font-medium">
-                            <span id="percentage-display" class="text-gray-500">0%</span>
-                            <div class="flex space-x-1 md:space-x-2">
-                                <a href="https://phophuc.github.io/back/" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline custom-link text-[11px]">
-                                    Lịch sử
-                                </a>
-                                <a href="https://blogger.googleusercontent.com/img/a/AVvXsEiDFxZ8ddB73i1vu0NIr5qdSo52IigreM69nGgm32jkkWP4tFX-9sgzXNzQjRvP-Go_f342C3E2vhKBA9rPfPUDEAMssbJYtuUWUJds0XYxXJl9MtKP69acl2G4HwxNZp0kn0S5l5NKxGh3qua8kSGicmuKkGCQgYeld8OIYVgE97Lgd--bBA6jc30ptJk" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline custom-link text-[11px]">
-                                    Ủng hộ thêm
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 <div id="countdown-container">
                     <div id="countdown-title">Thời gian còn lại đến môn thi đầu tiên:</div>
                     <div id="countdown">
@@ -150,66 +127,15 @@
             <i class="ph ph-dots-three-vertical"></i>
         </button>
         <div id="multi-function-menu" class="hidden">
-            <a href="https://blogger.googleusercontent.com/img/a/AVvXsEiDFxZ8ddB73i1vu0NIr5qdSo52IigreM69nGgm32jkkWP4tFX-9sgzXNzQjRvP-Go_f342C3E2vhKBA9rPfPUDEAMssbJYtuUWUJds0XYxXJl9MtKP69acl2G4HwxNZp0kn0S5l5NKxGh3qua8kSGicmuKkGCQgYeld8OIYVgE97Lgd--bBA6jc30ptJk" target="_blank" title="Ủng hộ (Donate)"><i class="ph ph-heart"></i> Donate</a>
-            <a href="#" target="_blank" title="---"><i class="ph ph-wrench"></i> Tiện ích</a>
-            <a href="https://phophuc.github.io/back/" target="_blank" title="---"><i class="ph ph-info"></i> Thông tin</a>
+            <a href="#" target="_blank" title="---"><i class="ph ph-wrench"></i> Coming soon...</a>
+            <a href="https://phophuc.github.io/back/" target="_blank" title="---"><i class="ph ph-info"></i> Lịch sử Donate</a>
             <a href="https://docs.google.com/forms/d/e/1FAIpQLSedlOhJ0by8MQIZFQ-aN-0D6iD5QF_fVuaKOJoQdqtN9Rhncw/viewform?usp=dialog" target="_blank" title="Báo cáo hoặc Gửi yêu cầu"><i class="ph ph-flag"></i> Góp ý</a>
         </div>
     </div>
     <script type="module" src="script.js"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- THIẾT LẬP GIÁ TRỊ TẠI ĐÂY ---
-            const goalAmount = 149000; // Mục tiêu 149,000 VNĐ
-            const donatedAmount = 149000; // Đã quyên góp 90,000 VNĐ
-            // --- KẾT THÚC PHẦN THIẾT LẬP ---
-
-            const progressBarFill = document.getElementById('progress-bar-fill');
-            const donatedAmountDisplay = document.getElementById('donated-amount-display');
-            const goalAmountDisplay = document.getElementById('goal-amount-display');
-            const percentageDisplay = document.getElementById('percentage-display');
-
-            function formatCurrency(amount) {
-                if (isNaN(amount)) return '0 VNĐ';
-                // Định dạng tiền tệ Việt Nam
-                return amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
-            }
-
-            function updateProgressBarUI() {
-                // Kiểm tra các phần tử tồn tại
-                if (!progressBarFill || !donatedAmountDisplay || !goalAmountDisplay || !percentageDisplay) {
-                    console.warn("Một hoặc nhiều phần tử của thanh tiến trình không được tìm thấy.");
-                    return; // Thoát nếu thiếu phần tử
-                }
-
-                const currentGoal = Number(goalAmount) || 0;
-                const currentDonated = Number(donatedAmount) || 0;
-                // Đảm bảo số tiền quyên góp không âm
-                const validDonated = Math.max(0, currentDonated);
-
-                let percentage = 0;
-                // Tính phần trăm, tránh chia cho 0
-                if (currentGoal > 0) {
-                    // Giới hạn số tiền quyên góp không vượt quá mục tiêu khi tính phần trăm
-                    const cappedDonatedAmount = Math.min(validDonated, currentGoal);
-                    percentage = (cappedDonatedAmount / currentGoal) * 100;
-                }
-
-                // Giới hạn phần trăm từ 0 đến 100
-                percentage = Math.max(0, Math.min(100, percentage));
-
-                // Cập nhật giao diện
-                progressBarFill.style.width = `${percentage}%`;
-                donatedAmountDisplay.textContent = `Đã quyên góp: ${formatCurrency(validDonated)}`;
-                goalAmountDisplay.textContent = `Mục tiêu: ${formatCurrency(currentGoal)}`;
-                // Hiển thị phần trăm với 1 chữ số thập phân
-                percentageDisplay.textContent = `${percentage.toFixed(1)}%`;
-            }
-
-            // Gọi hàm cập nhật khi DOM sẵn sàng
-            updateProgressBarUI();
-        });
+        // Script cho thanh tiến trình đã được xoá vì thanh tiến trình đã bị loại bỏ.
     </script>
 
 </body>
