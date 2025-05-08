@@ -29,33 +29,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const infoTimeLimit = document.getElementById('info-time-limit');
     const startBtn = document.getElementById('start-btn');
 
-    // Tham chiếu cho toolbar và nút submit trên toolbar
     const quizToolbar = document.getElementById('quiz-toolbar');
     const backToQuizListFromQuizBtn = document.getElementById('back-to-quiz-list-from-quiz-btn');
-    const submitButtonToolbar = document.getElementById('submit-btn-toolbar'); // Nút submit trên toolbar
+    const submitButtonToolbar = document.getElementById('submit-btn-toolbar');
 
     const timerContainer = document.getElementById('timer-container');
     const timeLeftElement = document.getElementById('time-left');
     const quizContentContainer = document.getElementById('quiz');
-    // Tham chiếu nút submit gốc
-    const submitButton = document.getElementById('submit-btn'); // Nút submit gốc ở dưới
+    const submitButton = document.getElementById('submit-btn');
     const retryButton = document.getElementById('retry-btn');
     const scoreContainer = document.getElementById('score-container');
     const filterContainer = document.getElementById('filter-container');
     const resultContainer = document.getElementById('result-container');
 
-    // Tham chiếu cho nút và menu đa năng
     const multiFunctionButton = document.getElementById('multi-function-button');
     const multiFunctionMenu = document.getElementById('multi-function-menu');
 
     // --- Trạng thái ứng dụng ---
     let currentView = 'subjectSelection';
     let selectedSubjectSlug = null;
-    let currentSubjectData = null; // Lưu dữ liệu môn học hiện tại sau khi import
-    let selectedQuizData = null; // Dữ liệu quiz gốc được chọn
+    let currentSubjectData = null;
+    let selectedQuizData = null;
     let timerIntervalId = null;
     let remainingTime = 0;
-    let shuffledQuizQuestions = []; // Danh sách câu hỏi đã xáo trộn cho bài thi hiện tại
+    let shuffledQuizQuestions = [];
 
     // --- Danh sách các môn học có sẵn ---
     const availableSubjects = {
@@ -66,13 +63,41 @@ document.addEventListener('DOMContentLoaded', () => {
         'tin-hoc': { name: 'Tin học', icon: 'ph-laptop' }
     };
 
+    // --- Biến toàn cục cho Countdown ---
+    let currentCountdownTargetDate = null; // Lưu trữ đối tượng Date của môn thi tiếp theo
+    let examCountdownInterval = null;
+    const countdownEl = document.getElementById('countdown');
+    const messageEl = document.getElementById('message'); // Tin nhắn phụ dưới bộ đếm (ví dụ: "Chúc bạn thi tốt")
+    const countdownTitleEl = document.getElementById('countdown-title'); // Tiêu đề của bộ đếm
+
+    // Lưu trữ giá trị trước đó của các chữ số countdown để tạo hiệu ứng
+    let prevCountdownValues = {
+        'days-tens': -1, 'days-units': -1, 'hours-tens': -1, 'hours-units': -1,
+        'minutes-tens': -1, 'minutes-units': -1, 'seconds-tens': -1, 'seconds-units': -1,
+    };
+
+
     // --- Hàm điều hướng màn hình ---
     function navigateTo(screenId) {
         Object.values(screens).forEach(screen => screen.classList.remove('active'));
         if (screens[screenId]) {
             screens[screenId].classList.add('active');
             currentView = screenId;
-            window.scrollTo(0, 0); // Cuộn lên đầu trang khi chuyển màn hình
+            window.scrollTo(0, 0);
+
+            const examScheduleEl = document.getElementById('exam-schedule-container');
+            if (examScheduleEl) {
+                if (screenId === 'subjectSelection') {
+                    examScheduleEl.style.display = 'block';
+                    displayExamSchedule(); // Làm mới lịch thi và bộ đếm khi quay lại màn hình chọn môn
+                } else {
+                    examScheduleEl.style.display = 'none';
+                    if (examCountdownInterval) { // Dừng bộ đếm nếu không ở màn hình chọn môn
+                        clearInterval(examCountdownInterval);
+                        examCountdownInterval = null;
+                    }
+                }
+            }
         } else {
             console.error("Screen ID not found:", screenId);
         }
@@ -86,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
         card.innerHTML = `<i class="ph ${subjectInfo.icon || 'ph-book-open'}"></i><h3>${subjectInfo.name}</h3>`;
         card.addEventListener('click', () => {
             selectedSubjectSlug = subjectSlug;
-            displayQuizList(subjectSlug); // Gọi hàm hiển thị danh sách quiz
+            displayQuizList(subjectSlug);
         });
         return card;
     }
@@ -97,13 +122,13 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Lỗi: Không tìm thấy phần tử #subject-list trong HTML.");
             return;
         }
-        subjectListContainer.innerHTML = ''; // Xóa nội dung cũ
+        subjectListContainer.innerHTML = '';
         for (const slug in availableSubjects) {
             const subjectInfo = availableSubjects[slug];
-            const card = createSubjectCard(slug, subjectInfo); // Sử dụng hàm tạo thẻ
+            const card = createSubjectCard(slug, subjectInfo);
             subjectListContainer.appendChild(card);
         }
-        navigateTo('subjectSelection');
+        navigateTo('subjectSelection'); // Điều này cũng sẽ gọi displayExamSchedule
     }
 
     // --- Hàm tạo mục bài thi trong danh sách ---
@@ -116,14 +141,11 @@ document.addEventListener('DOMContentLoaded', () => {
         listItem.addEventListener('click', () => {
             const clickedQuizData = currentSubjectData?.quizzes.find(q => q.id === quiz.id);
             if (clickedQuizData && clickedQuizData.redirectUrl) {
-                console.log(`Chuyển hướng đến: ${clickedQuizData.redirectUrl}`);
                 window.location.href = clickedQuizData.redirectUrl;
             } else if (clickedQuizData) {
-                console.warn(`Bài thi "${clickedQuizData.title}" không có redirectUrl. Hiển thị thông tin.`);
                 selectedQuizData = clickedQuizData;
                 displayQuizInfo();
             } else {
-                console.error("Không tìm thấy dữ liệu bài thi:", quiz.id);
                 displayQuizList(selectedSubjectSlug);
             }
         });
@@ -132,16 +154,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Hàm hiển thị danh sách bài thi theo môn (Async) ---
     async function displayQuizList(subjectSlug) {
-        if (!quizListContainer) {
-            console.error("Lỗi: Không tìm thấy phần tử #quiz-list trong HTML.");
-            return;
-        }
+        if (!quizListContainer) return;
         quizListContainer.innerHTML = '<p>Đang tải danh sách bài thi...</p>';
         if (quizListTitle) {
              const subjectInfo = availableSubjects[subjectSlug];
              quizListTitle.textContent = subjectInfo?.name || '...';
-        } else {
-             console.warn("Phần tử tiêu đề danh sách quiz không tồn tại.");
         }
 
         try {
@@ -150,20 +167,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!currentSubjectData || !currentSubjectData.quizzes) {
                 quizListContainer.innerHTML = '<p>Không thể tải dữ liệu bài thi.</p>';
-                console.error("Dữ liệu môn học không hợp lệ:", subjectSlug);
                 navigateTo('quizList');
                 return;
             }
-
-            if (quizListTitle) {
-                 quizListTitle.textContent = currentSubjectData.subjectName;
-            }
+            if (quizListTitle) quizListTitle.textContent = currentSubjectData.subjectName;
 
             quizListContainer.innerHTML = '';
             if (currentSubjectData.quizzes.length > 0) {
                 currentSubjectData.quizzes.forEach(quiz => {
-                    const listItem = createQuizListItem(quiz);
-                    quizListContainer.appendChild(listItem);
+                    quizListContainer.appendChild(createQuizListItem(quiz));
                 });
             } else {
                 quizListContainer.innerHTML = '<p>Chưa có bài thi nào.</p>';
@@ -179,22 +191,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Hàm hiển thị thông tin bài thi ---
     function displayQuizInfo() {
         if (!selectedQuizData) {
-            console.error("No quiz selected for info display.");
-            if (selectedSubjectSlug) {
-                 displayQuizList(selectedSubjectSlug);
-            } else {
-                 displaySubjectSelection();
-            }
+            if (selectedSubjectSlug) displayQuizList(selectedSubjectSlug);
+            else displaySubjectSelection();
             return;
         }
         if (infoQuizTitle) infoQuizTitle.textContent = selectedQuizData.title;
-        const mainQuestionsCount = selectedQuizData.questions.length;
-        if (infoTotalQuestions) infoTotalQuestions.textContent = mainQuestionsCount;
+        if (infoTotalQuestions) infoTotalQuestions.textContent = selectedQuizData.questions.length;
         if (infoTimeLimit) infoTimeLimit.textContent = selectedQuizData.timeLimitMinutes;
         navigateTo('info');
     }
 
-    // --- Helper function to add image ---
+    // --- Các hàm tạo câu hỏi (MC, TF, Fill) ---
     function addImageToQuestionBlock(questionBlock, question) {
         if (question.imageUrl) {
             const imgElement = document.createElement('img');
@@ -209,8 +216,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
-
-    // --- Hàm tạo khối câu hỏi Trắc nghiệm (MC) ---
     function createMCQuestionBlock(question, index) {
         const questionBlock = document.createElement('div');
         questionBlock.classList.add('question-block');
@@ -235,8 +240,6 @@ document.addEventListener('DOMContentLoaded', () => {
         questionBlock.appendChild(optionsDiv);
         return questionBlock;
     }
-
-    // --- Hàm tạo khối câu hỏi Đúng/Sai (TF) ---
     function createTFQuestionBlock(question, index) {
         const questionBlock = document.createElement('div');
         questionBlock.classList.add('question-block');
@@ -261,8 +264,6 @@ document.addEventListener('DOMContentLoaded', () => {
         questionBlock.appendChild(statementsContainer);
         return questionBlock;
     }
-
-    // --- Hàm tạo khối câu hỏi Điền từ (Fill) ---
     function createFillQuestionBlock(question, index) {
         const questionBlock = document.createElement('div');
         questionBlock.classList.add('question-block');
@@ -285,10 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Hàm hiển thị nội dung quiz ---
     function displayQuizContent(questionsArray) {
-         if (!quizContentContainer) {
-              console.error("Lỗi: Không tìm thấy phần tử #quiz.");
-              return;
-         }
+        if (!quizContentContainer) return;
         quizContentContainer.innerHTML = '';
         questionsArray.forEach((q, index) => {
             let questionBlock;
@@ -297,23 +295,19 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (q.type === 'fill') questionBlock = createFillQuestionBlock(q, index);
             if (questionBlock) quizContentContainer.appendChild(questionBlock);
         });
-         if (resultContainer) resultContainer.style.display = 'none';
-         if (resultContainer) resultContainer.innerHTML = '';
-         if (scoreContainer) scoreContainer.style.display = 'none';
-         if (filterContainer) filterContainer.style.display = 'none';
-         if (retryButton) retryButton.style.display = 'none';
-         if (backToListAfterResultBtn) backToListAfterResultBtn.style.display = 'inline-block';
-         if (submitButton) submitButton.style.display = 'inline-block';
-         if (submitButtonToolbar) submitButtonToolbar.style.display = 'inline-block';
+        if (resultContainer) { resultContainer.style.display = 'none'; resultContainer.innerHTML = ''; }
+        if (scoreContainer) scoreContainer.style.display = 'none';
+        if (filterContainer) filterContainer.style.display = 'none';
+        if (retryButton) retryButton.style.display = 'none';
+        if (backToListAfterResultBtn) backToListAfterResultBtn.style.display = 'inline-block'; // Should be none initially
+        if (submitButton) submitButton.style.display = 'inline-block';
+        if (submitButtonToolbar) submitButtonToolbar.style.display = 'inline-block';
     }
 
-    // --- Logic Timer ---
+    // --- Logic Timer (Bài thi) ---
     function startTimer(durationMinutes) {
         if (timerIntervalId) clearInterval(timerIntervalId);
-         if (!timeLeftElement) {
-              console.error("Lỗi: Không tìm thấy phần tử #time-left.");
-              return;
-         }
+        if (!timeLeftElement) return;
         remainingTime = durationMinutes * 60;
         updateTimerDisplay();
         timerIntervalId = setInterval(() => {
@@ -322,9 +316,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (remainingTime <= 0) handleTimeUp();
         }, 1000);
     }
-
     function updateTimerDisplay() {
-         if (!timeLeftElement || !timerContainer) return;
+        if (!timeLeftElement || !timerContainer) return;
         if (remainingTime < 0) remainingTime = 0;
         const minutes = Math.floor(remainingTime / 60);
         const seconds = remainingTime % 60;
@@ -339,16 +332,15 @@ document.addEventListener('DOMContentLoaded', () => {
             timerContainer.style.color = 'var(--timer-text)';
         }
     }
-
     function handleTimeUp() {
         clearInterval(timerIntervalId);
         timerIntervalId = null;
         alert("Đã hết thời gian làm bài! Bài thi sẽ được nộp tự động.");
         calculateAndDisplayScore(true);
     }
-    // --- Kết thúc Logic Timer ---
 
     // --- Logic Tính điểm ---
+    // ... (calculateMCQuestionScore, calculateTFQuestionScore, calculateFillQuestionScore - không thay đổi)
     function calculateMCQuestionScore(question, index, pointsPerMainQuestion) {
         const resultP = document.createElement('p');
         resultP.innerHTML = `<strong>Câu ${index + 1} (Trắc nghiệm):</strong> ${question.question}<br>`;
@@ -451,7 +443,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 if (!isStatementAnswerCorrect) allStatementsCorrectForFilter = false;
             } else {
-                 console.warn(`Checkbox for statement ${subIndex} in question ${index} not found.`);
                  allStatementsCorrectForFilter = false;
                  statementResultDiv.innerHTML += `<span class="incorrect">Lỗi: Không tìm thấy input.</span>`;
             }
@@ -505,18 +496,11 @@ document.addEventListener('DOMContentLoaded', () => {
         resultP.dataset.correctness = isQuestionCorrect ? 'correct' : 'incorrect';
         return { element: resultP, points: questionPoints, isCorrect: isQuestionCorrect };
     }
-
     function calculateAndDisplayScore(isAutoSubmit = false) {
         if (!selectedQuizData) return;
-        if (timerIntervalId) {
-            clearInterval(timerIntervalId);
-            timerIntervalId = null;
-        }
+        if (timerIntervalId) { clearInterval(timerIntervalId); timerIntervalId = null; }
         let totalScore = 0;
-         if (!resultContainer) {
-             console.error("Lỗi: Không tìm thấy phần tử #result-container.");
-             return;
-         }
+        if (!resultContainer) return;
         resultContainer.innerHTML = '';
         const currentQuestions = shuffledQuizQuestions;
         const totalMainQuestions = currentQuestions.length;
@@ -533,30 +517,31 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         const finalScoreRounded = totalScore.toFixed(2);
-         if (scoreContainer) scoreContainer.innerHTML = `Kết quả: <strong style="font-size: 1.1em;">Điểm: ${finalScoreRounded} / 10</strong>`;
-         if (scoreContainer) scoreContainer.style.display = 'block';
-         if (filterContainer) filterContainer.style.display = 'block';
-         if (resultContainer) resultContainer.style.display = 'block';
-         if (submitButtonToolbar) submitButtonToolbar.style.display = 'none';
-         if (submitButton) submitButton.style.display = 'none';
-         if (retryButton) retryButton.style.display = 'inline-block';
-         if (backToListAfterResultBtn) backToListAfterResultBtn.style.display = 'inline-block';
-         if (filterContainer) {
-              applyFilter('all');
-              filterContainer.querySelectorAll('.filter-btn').forEach(btn => {
-                  btn.classList.remove('active');
-                  if (btn.dataset.filter === 'all') btn.classList.add('active');
-              });
-         }
+        if (scoreContainer) {
+            scoreContainer.innerHTML = `Kết quả: <strong style="font-size: 1.1em;">Điểm: ${finalScoreRounded} / 10</strong>`;
+            scoreContainer.style.display = 'block';
+        }
+        if (filterContainer) filterContainer.style.display = 'block';
+        if (resultContainer) resultContainer.style.display = 'block';
+        if (submitButtonToolbar) submitButtonToolbar.style.display = 'none';
+        if (submitButton) submitButton.style.display = 'none';
+        if (retryButton) retryButton.style.display = 'inline-block';
+        if (backToListAfterResultBtn) backToListAfterResultBtn.style.display = 'inline-block';
+        if (filterContainer) {
+            applyFilter('all');
+            filterContainer.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.filter === 'all') btn.classList.add('active');
+            });
+        }
         if (!isAutoSubmit && resultContainer) {
-             resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
-    // --- Kết thúc Logic Tính điểm ---
 
     // --- Logic Lọc kết quả ---
     function applyFilter(filterType) {
-         if (!resultContainer) return;
+        if (!resultContainer) return;
         const resultItems = resultContainer.querySelectorAll('p[data-correctness], div[data-correctness]');
         resultItems.forEach(item => {
             const correctness = item.dataset.correctness;
@@ -568,29 +553,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-    // --- Kết thúc Logic Lọc kết quả ---
 
     // --- Logic Xử lý nút ---
     function handleRetryQuiz() {
-        if (timerIntervalId) {
-            clearInterval(timerIntervalId);
-            timerIntervalId = null;
-        }
-        if (selectedSubjectSlug) {
-            displayQuizList(selectedSubjectSlug);
-        } else {
-            displaySubjectSelection();
-        }
+        if (timerIntervalId) { clearInterval(timerIntervalId); timerIntervalId = null; }
+        if (selectedSubjectSlug) displayQuizList(selectedSubjectSlug);
+        else displaySubjectSelection();
         shuffledQuizQuestions = [];
         selectedQuizData = null;
         currentSubjectData = null;
     }
-
     function handleStartQuiz() {
-        if (!selectedQuizData) {
-             console.error("Không có dữ liệu quiz để bắt đầu.");
-             return;
-        }
+        if (!selectedQuizData) return;
         const mcQuestions = selectedQuizData.questions.filter(q => q.type === 'mc');
         const tfQuestions = selectedQuizData.questions.filter(q => q.type === 'tf');
         const fillQuestions = selectedQuizData.questions.filter(q => q.type === 'fill');
@@ -611,26 +585,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         displayQuizContent(shuffledQuizQuestions);
         if (selectedQuizData.timeLimitMinutes > 0) {
-             startTimer(selectedQuizData.timeLimitMinutes);
-             if(timerContainer) timerContainer.style.display = 'inline-flex';
+            startTimer(selectedQuizData.timeLimitMinutes);
+            if (timerContainer) timerContainer.style.display = 'inline-flex';
         } else {
-             if(timerContainer) timerContainer.style.display = 'none';
+            if (timerContainer) timerContainer.style.display = 'none';
         }
         if (submitButton) submitButton.style.display = 'inline-block';
         if (submitButtonToolbar) submitButtonToolbar.style.display = 'inline-block';
         navigateTo('quiz');
     }
-    // --- Kết thúc Logic Xử lý nút ---
 
-    // --- LOGIC COUNTDOWN ĐẾN NGÀY THI ---
-    const countdownDate = new Date("May 12, 2025 07:15:00").getTime();
-    const messageEl = document.getElementById('message');
-    const countdownEl = document.getElementById('countdown');
-    let prevCountdownValues = {
-        'days-tens': -1, 'days-units': -1, 'hours-tens': -1, 'hours-units': -1,
-        'minutes-tens': -1, 'minutes-units': -1, 'seconds-tens': -1, 'seconds-units': -1,
-    };
-
+    // --- LOGIC BỘ ĐẾM NGƯỢC NGÀY THI (COUNTDOWN) ---
     function updateDigit(elementId, newDigit) {
         const prevDigit = prevCountdownValues[elementId];
         if (newDigit !== prevDigit) {
@@ -644,49 +609,71 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentElement.style.transition = 'none';
                 currentElement.style.transform = 'translateY(-100%)';
                 requestAnimationFrame(() => {
-                     requestAnimationFrame(() => {
-                          currentElement.style.transition = 'transform 0.4s ease-in-out';
-                          currentElement.style.transform = 'translateY(0)';
-                     });
+                    requestAnimationFrame(() => {
+                        currentElement.style.transition = 'transform 0.4s ease-in-out';
+                        currentElement.style.transform = 'translateY(0)';
+                    });
                 });
             });
-             prevCountdownValues[elementId] = newDigit;
+            prevCountdownValues[elementId] = newDigit;
         }
     }
 
-    function updateExamCountdown() {
-        const now = new Date().getTime();
-        const distance = countdownDate - now;
-        if (distance < 0) {
+    function startOrUpdateGlobalCountdown() {
+        if (examCountdownInterval) {
             clearInterval(examCountdownInterval);
-             Object.keys(prevCountdownValues).forEach(id => updateDigit(id, '0'));
-            if (countdownEl) countdownEl.style.display = 'none';
-            if (messageEl) messageEl.textContent = "Chúc bạn thi tốt!";
-            return;
+            examCountdownInterval = null;
         }
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-        updateDigit('days-tens', Math.floor(days / 10)); updateDigit('days-units', days % 10);
-        updateDigit('hours-tens', Math.floor(hours / 10)); updateDigit('hours-units', hours % 10);
-        updateDigit('minutes-tens', Math.floor(minutes / 10)); updateDigit('minutes-units', minutes % 10);
-        updateDigit('seconds-tens', Math.floor(seconds / 10)); updateDigit('seconds-units', seconds % 10);
+
+        if (currentCountdownTargetDate && currentCountdownTargetDate.getTime() > new Date().getTime()) {
+            if (countdownEl) countdownEl.style.display = 'flex';
+            if (messageEl) messageEl.textContent = ''; // Xóa tin nhắn chung
+
+            initializeExamCountdownDisplay(); // Sử dụng currentCountdownTargetDate toàn cục
+            examCountdownInterval = setInterval(updateExamCountdown, 1000); // Sử dụng currentCountdownTargetDate toàn cục
+        } else {
+            // Không có ngày mục tiêu hợp lệ trong tương lai
+            if (countdownEl) countdownEl.style.display = 'none';
+            // countdownTitleEl đã được cập nhật bởi displayExamSchedule
+            Object.keys(prevCountdownValues).forEach(id => updateDigit(id, '0')); // Reset các chữ số
+            if (messageEl && currentView === 'subjectSelection') { // Chỉ hiển thị tin nhắn "chúc thi tốt" nếu không có môn nào sắp tới
+                 if (currentCountdownTargetDate === null && document.getElementById('all-exams-passed-message')?.style.display !== 'none') {
+                    // messageEl.textContent = "Tất cả các môn thi đã kết thúc."; // Tiêu đề đã xử lý
+                 } else if (currentCountdownTargetDate === null && document.getElementById('no-upcoming-message')?.style.display !== 'none') {
+                    // messageEl.textContent = "Hiện tại không có lịch thi nào sắp tới."; // Tiêu đề đã xử lý
+                 } else if (currentCountdownTargetDate && currentCountdownTargetDate.getTime() <= new Date().getTime()){
+                    // messageEl.textContent = "Chúc bạn thi tốt!"; // Môn thi vừa qua
+                 }
+            }
+        }
     }
 
     function initializeExamCountdownDisplay() {
-        const now = new Date().getTime();
-        const distance = countdownDate - now > 0 ? countdownDate - now : 0;
-        if (distance <= 0) {
-            if (messageEl) messageEl.textContent = "Chúc bạn thi tốt!";
+        if (!currentCountdownTargetDate) {
+            Object.keys(prevCountdownValues).forEach(id => {
+                const element = document.getElementById(id);
+                if (element) element.textContent = '0';
+                prevCountdownValues[id] = 0;
+            });
             if (countdownEl) countdownEl.style.display = 'none';
-             Object.keys(prevCountdownValues).forEach(id => {
-                  const el = document.getElementById(id);
-                  if (el) el.textContent = '0';
-                  prevCountdownValues[id] = 0;
-             });
             return;
         }
+
+        const now = new Date().getTime();
+        const targetTime = currentCountdownTargetDate.getTime();
+        const distance = targetTime - now > 0 ? targetTime - now : 0;
+
+        if (distance <= 0) {
+            Object.keys(prevCountdownValues).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = '0';
+                prevCountdownValues[id] = 0;
+            });
+            if (countdownEl) countdownEl.style.display = 'none';
+            return;
+        }
+        if (countdownEl) countdownEl.style.display = 'flex';
+
         const days = Math.floor(distance / (1000 * 60 * 60 * 24));
         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
@@ -700,20 +687,187 @@ document.addEventListener('DOMContentLoaded', () => {
         for (const id in initialTimeValues) {
             const element = document.getElementById(id);
             if (element) {
-                element.textContent = initialTimeValues[id];
+                element.textContent = initialTimeValues[id]; // Đặt trực tiếp khi khởi tạo
                 prevCountdownValues[id] = initialTimeValues[id];
             }
         }
     }
 
-    let examCountdownInterval = null;
-    if (countdownEl && messageEl) {
-        initializeExamCountdownDisplay();
-        examCountdownInterval = setInterval(updateExamCountdown, 1000);
-    } else {
-         console.warn("Countdown elements not found.");
+    function updateExamCountdown() {
+        if (!currentCountdownTargetDate) {
+            if (examCountdownInterval) clearInterval(examCountdownInterval);
+            examCountdownInterval = null;
+            if (countdownEl) countdownEl.style.display = 'none';
+            return;
+        }
+
+        const now = new Date().getTime();
+        const distance = currentCountdownTargetDate.getTime() - now;
+
+        if (distance < 0) {
+            // Thời gian thi đã qua. displayExamSchedule sẽ tìm mục tiêu tiếp theo hoặc hiển thị "tất cả đã qua".
+            // Nó cũng sẽ gọi startOrUpdateGlobalCountdown để xóa interval cũ.
+            displayExamSchedule();
+            return;
+        }
+
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        updateDigit('days-tens', Math.floor(days / 10)); updateDigit('days-units', days % 10);
+        updateDigit('hours-tens', Math.floor(hours / 10)); updateDigit('hours-units', hours % 10);
+        updateDigit('minutes-tens', Math.floor(minutes / 10)); updateDigit('minutes-units', minutes % 10);
+        updateDigit('seconds-tens', Math.floor(seconds / 10)); updateDigit('seconds-units', seconds % 10);
     }
-    // --- KẾT THÚC LOGIC COUNTDOWN ---
+    // --- KẾT THÚC LOGIC BỘ ĐẾM NGƯỢC NGÀY THI ---
+
+
+    // --- LOGIC BẢNG LỊCH THI ---
+    function displayExamSchedule() {
+        const exams = [ // Dữ liệu lịch thi
+            { ngayThi: "12/05/2025", monThi: "Văn", thoiGianBatDau: "7g20", thoiGianLamBai: "90 phút" },
+            { ngayThi: "12/05/2025", monThi: "Vật lý", thoiGianBatDau: "9h00", thoiGianLamBai: "45 phút" },
+            { ngayThi: "13/05/2025", monThi: "Toán", thoiGianBatDau: "7g20", thoiGianLamBai: "90 phút" },
+            { ngayThi: "13/05/2025", monThi: "Sinh", thoiGianBatDau: "9h00", thoiGianLamBai: "45 phút" },
+            { ngayThi: "14/05/2025", monThi: "Lịch sử", thoiGianBatDau: "7g20", thoiGianLamBai: "45 phút" },
+            { ngayThi: "14/05/2025", monThi: "Tiếng Anh", thoiGianBatDau: "8g15", thoiGianLamBai: "60 phút" },
+            { ngayThi: "15/05/2025", monThi: "Hóa", thoiGianBatDau: "7g20", thoiGianLamBai: "45 phút" },
+            { ngayThi: "15/05/2025", monThi: "Tin học", thoiGianBatDau: "8g20", thoiGianLamBai: "45 phút" }
+        ];
+
+        function parseDateTime(dateStr, timeStr) {
+            const [day, month, year] = dateStr.split('/').map(Number);
+            const normalizedTimeStr = timeStr.replace('g', ':').replace('h', ':');
+            const timeParts = normalizedTimeStr.split(':').map(Number);
+            const hours = timeParts[0];
+            const minutes = timeParts.length > 1 ? timeParts[1] : 0;
+            return new Date(year, month - 1, day, hours, minutes, 0);
+        }
+
+        function calculateEndTime(startTime, durationStr) {
+            const durationMinutes = parseInt(durationStr.replace(' phút', ''));
+            return new Date(startTime.getTime() + durationMinutes * 60000);
+        }
+
+        const processedExams = exams.map(exam => ({
+            ...exam,
+            dateTime: parseDateTime(exam.ngayThi, exam.thoiGianBatDau)
+        })).sort((a, b) => a.dateTime - b.dateTime);
+
+        const now = new Date();
+        const tbody = document.getElementById('exam-schedule-body');
+        const noUpcomingMessage = document.getElementById('no-upcoming-message');
+        const allExamsPassedMessage = document.getElementById('all-exams-passed-message');
+
+        if (!tbody || !noUpcomingMessage || !allExamsPassedMessage || !countdownTitleEl) {
+            console.warn("Một số phần tử DOM cho lịch thi hoặc countdown không tìm thấy.");
+            return;
+        }
+        tbody.innerHTML = '';
+
+        // Xác định môn thi tiếp theo cho countdown và trạng thái chung
+        let firstUpcomingExamForCountdown = null;
+        for (const exam of processedExams) {
+            if (exam.dateTime > now) {
+                firstUpcomingExamForCountdown = exam;
+                break;
+            }
+        }
+
+        if (firstUpcomingExamForCountdown) {
+            currentCountdownTargetDate = firstUpcomingExamForCountdown.dateTime;
+            countdownTitleEl.textContent = `Thời gian còn lại đến môn thi tiếp theo:`;
+        } else {
+            currentCountdownTargetDate = null;
+            if (processedExams.length > 0 && processedExams.every(exam => calculateEndTime(exam.dateTime, exam.thoiGianLamBai) < now)) {
+                countdownTitleEl.textContent = "Tất cả các môn thi đã kết thúc.";
+                 if (messageEl) messageEl.textContent = "Chúc bạn ôn tập tốt cho các kỳ thi sau!";
+            } else if (processedExams.length === 0) {
+                countdownTitleEl.textContent = "Không có lịch thi.";
+                 if (messageEl) messageEl.textContent = "Vui lòng kiểm tra lại sau.";
+            } else {
+                // Trường hợp có môn thi nhưng không phải "sắp tới" và cũng không phải "tất cả đã qua"
+                // (ví dụ: dữ liệu lỗi, hoặc một môn đang diễn ra)
+                // Tìm môn đang diễn ra hoặc môn vừa kết thúc gần nhất để hiển thị thông báo phù hợp
+                let lastExamToday = null;
+                const todayExams = processedExams.filter(exam =>
+                    exam.dateTime.getDate() === now.getDate() &&
+                    exam.dateTime.getMonth() === now.getMonth() &&
+                    exam.dateTime.getFullYear() === now.getFullYear()
+                );
+                if(todayExams.length > 0){
+                    lastExamToday = todayExams.reduce((last, current) => {
+                        return calculateEndTime(current.dateTime, current.thoiGianLamBai) > calculateEndTime(last.dateTime, last.thoiGianLamBai) ? current : last;
+                    });
+                }
+
+                if (lastExamToday && lastExamToday.dateTime <= now && calculateEndTime(lastExamToday.dateTime, lastExamToday.thoiGianLamBai) >= now) {
+                    countdownTitleEl.textContent = `Môn ${lastExamToday.monThi} đang diễn ra!`;
+                } else {
+                     countdownTitleEl.textContent = "Lịch thi chưa được cập nhật chính xác.";
+                }
+                 if (messageEl) messageEl.textContent = "";
+            }
+        }
+        startOrUpdateGlobalCountdown(); // Khởi động hoặc cập nhật bộ đếm toàn cục
+
+
+        // Hiển thị bảng lịch thi và các tin nhắn
+        let nextExamDayForHighlight = null;
+        if (firstUpcomingExamForCountdown) {
+            nextExamDayForHighlight = firstUpcomingExamForCountdown.ngayThi;
+        }
+
+
+        let allPassedCheck = true;
+        if (processedExams.length > 0) {
+            processedExams.forEach(exam => {
+                if (calculateEndTime(exam.dateTime, exam.thoiGianLamBai) > now) {
+                    allPassedCheck = false;
+                }
+                const row = document.createElement('tr');
+                row.classList.add('bg-white');
+                const cellClasses = ['py-3', 'px-2', 'md:px-4', 'text-sm', 'md:text-base', 'align-middle', 'md:whitespace-nowrap'];
+                const examEndTime = calculateEndTime(exam.dateTime, exam.thoiGianLamBai);
+
+                if (examEndTime < now) {
+                    row.classList.add('exam-row-passed');
+                } else if (exam.ngayThi === nextExamDayForHighlight) {
+                    row.classList.remove('bg-white');
+                    row.classList.add('exam-row-next-day');
+                } else {
+                    row.classList.add('exam-row-upcoming');
+                }
+                row.classList.add('hover:bg-gray-50', 'transition-colors', 'duration-150');
+                row.innerHTML = `
+                    <td class="${cellClasses.join(' ')}">${exam.ngayThi}</td>
+                    <td class="${cellClasses.join(' ')}">${exam.monThi}</td>
+                    <td class="${cellClasses.join(' ')}">${exam.thoiGianBatDau.replace('g', 'h')}</td>
+                    <td class="${cellClasses.join(' ')}">${exam.thoiGianLamBai}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+
+        if (processedExams.length === 0) {
+            noUpcomingMessage.style.display = 'block';
+            allExamsPassedMessage.style.display = 'none';
+        } else if (allPassedCheck) {
+            allExamsPassedMessage.style.display = 'block';
+            noUpcomingMessage.style.display = 'none';
+        } else if (!firstUpcomingExamForCountdown && !allPassedCheck) {
+            // Có exam nhưng không có exam nào sắp tới và cũng không phải tất cả đã qua (ví dụ đang diễn ra)
+            noUpcomingMessage.style.display = 'none'; // Hoặc một tin nhắn khác
+            allExamsPassedMessage.style.display = 'none';
+        }
+        else {
+            noUpcomingMessage.style.display = 'none';
+            allExamsPassedMessage.style.display = 'none';
+        }
+    }
+    // --- KẾT THÚC LOGIC BẢNG LỊCH THI ---
 
     // --- Gắn sự kiện ---
     if (startBtn) startBtn.addEventListener('click', handleStartQuiz);
@@ -721,6 +875,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (submitButton) submitButton.addEventListener('click', () => calculateAndDisplayScore(false));
     if (retryButton) retryButton.addEventListener('click', handleRetryQuiz);
     if (backToListAfterResultBtn) backToListAfterResultBtn.addEventListener('click', handleRetryQuiz);
+
     if (backToSubjectsBtn) backToSubjectsBtn.addEventListener('click', () => {
         if (timerIntervalId) clearInterval(timerIntervalId); timerIntervalId = null;
         shuffledQuizQuestions = []; selectedQuizData = null; currentSubjectData = null;
@@ -732,37 +887,36 @@ document.addEventListener('DOMContentLoaded', () => {
         if (selectedSubjectSlug && currentSubjectData) displayQuizListFromData(currentSubjectData);
         else displaySubjectSelection();
     });
-     if (backToQuizListFromQuizBtn) backToQuizListFromQuizBtn.addEventListener('click', () => {
-         if (timerIntervalId) clearInterval(timerIntervalId); timerIntervalId = null;
-         shuffledQuizQuestions = []; selectedQuizData = null;
-         if (selectedSubjectSlug && currentSubjectData) displayQuizListFromData(currentSubjectData);
-         else displaySubjectSelection();
-     });
+    if (backToQuizListFromQuizBtn) backToQuizListFromQuizBtn.addEventListener('click', () => {
+        if (timerIntervalId) clearInterval(timerIntervalId); timerIntervalId = null;
+        shuffledQuizQuestions = []; selectedQuizData = null;
+        if (selectedSubjectSlug && currentSubjectData) displayQuizListFromData(currentSubjectData);
+        else displaySubjectSelection();
+    });
 
     function displayQuizListFromData(subjectData) {
-         if (!quizListContainer || !subjectData || !subjectData.quizzes) {
-              console.error("Không thể hiển thị danh sách quiz từ dữ liệu.");
-              displaySubjectSelection(); return;
-         }
-         if (quizListTitle) quizListTitle.textContent = subjectData.subjectName;
-         quizListContainer.innerHTML = '';
-         if (subjectData.quizzes.length > 0) {
-             subjectData.quizzes.forEach(quiz => quizListContainer.appendChild(createQuizListItem(quiz)));
-         } else {
-             quizListContainer.innerHTML = '<p>Chưa có bài thi nào.</p>';
-         }
-         navigateTo('quizList');
+        if (!quizListContainer || !subjectData || !subjectData.quizzes) {
+            displaySubjectSelection(); return;
+        }
+        if (quizListTitle) quizListTitle.textContent = subjectData.subjectName;
+        quizListContainer.innerHTML = '';
+        if (subjectData.quizzes.length > 0) {
+            subjectData.quizzes.forEach(quiz => quizListContainer.appendChild(createQuizListItem(quiz)));
+        } else {
+            quizListContainer.innerHTML = '<p>Chưa có bài thi nào.</p>';
+        }
+        navigateTo('quizList');
     }
 
     if (filterContainer) {
-         filterContainer.addEventListener('click', (event) => {
-             if (event.target.classList.contains('filter-btn')) {
-                 const filterType = event.target.dataset.filter;
-                 filterContainer.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-                 event.target.classList.add('active');
-                 applyFilter(filterType);
-             }
-         });
+        filterContainer.addEventListener('click', (event) => {
+            if (event.target.classList.contains('filter-btn')) {
+                const filterType = event.target.dataset.filter;
+                filterContainer.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                event.target.classList.add('active');
+                applyFilter(filterType);
+            }
+        });
     }
 
     // --- Logic nút đa năng ---
@@ -779,18 +933,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         multiFunctionMenu.addEventListener('click', () => {
-             multiFunctionMenu.classList.remove('visible');
-             multiFunctionMenu.classList.add('hidden');
+            multiFunctionMenu.classList.remove('visible');
+            multiFunctionMenu.classList.add('hidden');
         });
-    } else {
-        console.warn("Multi-function button or menu not found.");
     }
-    // --- Kết thúc Logic nút đa năng ---
 
     // --- Khởi tạo ứng dụng ---
-    displaySubjectSelection();
+    displaySubjectSelection(); // Gọi lần đầu để hiển thị môn học, lịch thi và khởi động bộ đếm
 
-}); // Kết thúc DOMContentLoaded cho Quiz App
-
-// --- Code riêng cho Thanh Tiến Trình (đã được chuyển vào HTML) ---
-// Không cần thêm code JS ở đây nữa vì đã đặt trong thẻ <script> ở cuối index.html
+}); // Kết thúc DOMContentLoaded
