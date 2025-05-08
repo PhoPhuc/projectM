@@ -20,15 +20,42 @@
       gtag('js', new Date());
       gtag('config', 'G-RSV525YKKT');
     </script>
-
+    <style>
+        /* Custom styles for the exam schedule table, can be moved to style.css if preferred */
+        /* body {
+            font-family: 'Inter', sans-serif; /* Already set in style.css, but good for context */
+            /* background-color: #f3f4f6; /* bg-gray-100 */
+        /* } */
+        .table-caption {
+            color: #1d4ed8; /* text-blue-700 */
+            padding-left: 1rem; /* px-4 for caption */
+            padding-right: 1rem; /* px-4 for caption */
+        }
+        .table-header-exam { /* Renamed to avoid conflict if 'table-header' is generic */
+            background-color: #4a90e2; /* bg-blue-600 */
+            color: white;
+        }
+        .exam-row-passed td {
+            color: #9ca3af; /* text-gray-400 */
+        }
+        .exam-row-next-day {
+            background-color: #fef08a; /* bg-yellow-200 */
+        }
+        .exam-row-next-day td {
+            color: #713f12; /* text-yellow-900 */
+            font-weight: 600; /* font-semibold */
+        }
+        .exam-row-upcoming td {
+            color: #1f2937; /* text-gray-800 */
+        }
+    </style>
 </head>
 <body>
 
     <div id="app-container">
 
         <div id="subject-selection-screen" class="screen active">
-            <div class="screen-container">
-                <h1>Chọn Môn Học</h1>
+            <div class="screen-container"> <h1>Chọn Môn Học</h1>
                 <div id="countdown-container">
                     <div id="countdown-title">Thời gian còn lại đến môn thi đầu tiên:</div>
                     <div id="countdown">
@@ -66,8 +93,30 @@
                 <p>Chọn môn học bạn muốn ôn tập trắc nghiệm:</p>
                 <div id="subject-list" class="grid-container">
                     </div>
-            </div>
-        </div>
+
+                <div id="exam-schedule-container" class="container mx-auto p-4 md:p-8 mt-10"> <h2 class="text-2xl font-bold text-center text-blue-700 mb-6"></h2>
+                    <div class="overflow-x-auto bg-white shadow-xl rounded-lg">
+                        <table class="min-w-full w-full table-auto">
+                            <thead class="table-header-exam">
+                                <tr>
+                                    <th class="py-3 px-2 md:px-4 uppercase font-semibold text-sm text-left whitespace-nowrap rounded-tl-lg">Ngày thi</th>
+                                    <th class="py-3 px-2 md:px-4 uppercase font-semibold text-sm text-left whitespace-nowrap">Môn thi</th>
+                                    <th class="py-3 px-2 md:px-4 uppercase font-semibold text-sm text-left whitespace-nowrap">Thời gian bắt đầu</th>
+                                    <th class="py-3 px-2 md:px-4 uppercase font-semibold text-sm text-left whitespace-nowrap rounded-tr-lg">Thời gian làm bài</th>
+                                </tr>
+                            </thead>
+                            <tbody id="exam-schedule-body" class="divide-y divide-gray-200">
+                                </tbody>
+                        </table>
+                    </div>
+                    <p id="no-upcoming-message" class="text-center text-gray-600 mt-6 text-lg" style="display:none;">
+                        Hiện tại không có lịch thi nào sắp tới hoặc không có dữ liệu.
+                    </p>
+                    <p id="all-exams-passed-message" class="text-center text-gray-600 mt-6 text-lg" style="display:none;">
+                        Tất cả các môn thi trong lịch đã kết thúc.
+                    </p>
+                </div>
+                </div> </div>
 
         <div id="quiz-list-screen" class="screen">
              <div class="screen-container">
@@ -120,7 +169,7 @@
                       </div>
               </div>
          </div>
-         </div>
+    </div>
 
     <div id="multi-function-container">
         <button id="multi-function-button" title="Thêm">
@@ -135,7 +184,7 @@
     <script type="module" src="script.js"></script>
 
     <script>
-        // Script cho thanh tiến trình đã được xoá vì thanh tiến trình đã bị loại bỏ.
+        // Script for donation progress bar has been removed as the bar was removed.
     </script>
 
 </body>
