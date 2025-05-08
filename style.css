@@ -57,7 +57,7 @@ body {
 
 #app-container {
     width: 100%;
-    max-width: 900px;
+    max-width: 900px; /* Increased max-width to better accommodate the schedule table */
 }
 
 /* --- Screen Management --- */
@@ -606,4 +606,28 @@ body {
     transform: translateY(10px);
     /* Quan trọng: Thêm transition-delay để tránh bị ẩn ngay lập tức khi click */
     transition: opacity 0.3s ease, visibility 0s linear 0.3s, transform 0.3s ease;
+}
+
+/* Styles for Exam Schedule Table (already in HTML <style> but can be here too) */
+.table-caption {
+    color: #1d4ed8; /* text-blue-700 */
+    padding-left: 1rem; /* px-4 for caption */
+    padding-right: 1rem; /* px-4 for caption */
+}
+.table-header-exam { /* Renamed to avoid conflict */
+    background-color: #4a90e2; /* bg-blue-600 */
+    color: white;
+}
+.exam-row-passed td {
+    color: #9ca3af; /* text-gray-400 */
+}
+.exam-row-next-day {
+    background-color: #fef08a; /* bg-yellow-200 */
+}
+.exam-row-next-day td {
+    color: #713f12; /* text-yellow-900 */
+    font-weight: 600; /* font-semibold */
+}
+.exam-row-upcoming td {
+    color: #1f2937; /* text-gray-800 */
 }
