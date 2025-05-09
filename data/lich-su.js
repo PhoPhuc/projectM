@@ -8,7 +8,7 @@ const lichSuQuizData = {
         // --- Bài quiz ôn tập Học kì 2 môn Sinh học ---
         {
             id: 'ls-1',
-            title: 'Lịch sử Học kì 2',
+            title: 'Full trắc nghiệm',
             timeLimitMinutes: 55, // 55 phút cho 58 câu + 9 câu TF + 1 câu MC mới = 68 câu. Có thể cần điều chỉnh thời gian.
             redirectUrl: 'https://azota.vn/de-thi/dxsx3a', // <-- Thêm URL chuyển hướng tại đây
             questions: [
@@ -19,9 +19,36 @@ const lichSuQuizData = {
         },
         {
             id: 'ls-2',
-            title: '(LUYỆT TẬP) Lịch sử Học kì 2',
+            title: '(LUYỆT TẬP) Full trắc nghiệm',
             timeLimitMinutes: 45,
             redirectUrl: 'https://azota.vn/de-thi/baiozn', // Thêm dấu phẩy ở đây
+            questions: [
+                 // ... các câu hỏi ...
+            ]
+        },
+        {
+            id: 'ls-3',
+            title: '(1-35) Trắc nghiệm 35 câu đầu',
+            timeLimitMinutes: 45,
+            redirectUrl: 'https://azota.vn/de-thi/fc1chs', // Thêm dấu phẩy ở đây
+            questions: [
+                 // ... các câu hỏi ...
+            ]
+        },
+        {
+            id: 'ls-4',
+            title: '(36-70) Trắc nghiệm 35 câu tiếp theo',
+            timeLimitMinutes: 45,
+            redirectUrl: 'https://azota.vn/de-thi/zpzzmt', // Thêm dấu phẩy ở đây
+            questions: [
+                 // ... các câu hỏi ...
+            ]
+        },
+        {
+            id: 'ls-5',
+            title: '(71-106) Trắc nghiệm 36 câu cuối',
+            timeLimitMinutes: 45,
+            redirectUrl: 'https://azota.vn/de-thi/304r8l', // Thêm dấu phẩy ở đây
             questions: [
                  // ... các câu hỏi ...
             ]
