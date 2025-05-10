@@ -27,6 +27,15 @@ const lichSuQuizData = {
             ]
         },
         {
+            id: 'ls-ds',
+            title: '(Internet) Tham khảo đúng sai',
+            timeLimitMinutes: 45,
+            redirectUrl: 'https://azota.vn/de-thi/hbkn5j', // Thêm dấu phẩy ở đây
+            questions: [
+                 // ... các câu hỏi ...
+            ]
+        },
+        {
             id: 'ls-3',
             title: '(1-35) Trắc nghiệm 35 câu đầu',
             timeLimitMinutes: 45,
