@@ -21,7 +21,7 @@ const sinhHocQuizData = {
             id: 'sh-2',
             title: '(LUYỆT TẬP) Sinh học Học kì 2',
             timeLimitMinutes: 45,
-            redirectUrl: 'https://azota.vn/de-thi/7a6o2r', // Thêm dấu phẩy ở đây
+            redirectUrl: 'https://azota.vn/de-thi/leailn', // Thêm dấu phẩy ở đây
             questions: [
                  // ... các câu hỏi ...
             ]
