@@ -27,7 +27,6 @@ const hoaHocQuizData = {
             ]
         },
         {
-                {
             id: 'hh-3',
             title: 'Báo cáo đáp án sai tại đây',
             timeLimitMinutes: 45,
