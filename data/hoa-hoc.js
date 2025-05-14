@@ -8,7 +8,7 @@ const hoaHocQuizData = {
         // --- Bài quiz ôn tập Học kì 2 môn Sinh học ---
         {
             id: 'hh-1',
-            title: 'Hoá học Học kì 2',
+            title: 'Hoá học Học kì 2 (có đáp án sai)',
             timeLimitMinutes: 55, // 55 phút cho 58 câu + 9 câu TF + 1 câu MC mới = 68 câu. Có thể cần điều chỉnh thời gian.
             redirectUrl: 'https://azota.vn/de-thi/fbtu4u', // <-- Thêm URL chuyển hướng tại đây
             questions: [
@@ -19,7 +19,7 @@ const hoaHocQuizData = {
         },
         {
             id: 'hh-2',
-            title: '(LUYỆT TẬP) Hoá học Học kì 2',
+            title: '(LUYỆT TẬP) Hoá học Học kì 2 (có đáp án sai)',
             timeLimitMinutes: 45,
             redirectUrl: 'https://azota.vn/de-thi/r7b6cp', // Thêm dấu phẩy ở đây
             questions: [
